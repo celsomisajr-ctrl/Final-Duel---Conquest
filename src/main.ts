@@ -39,7 +39,7 @@ document.querySelectorAll<HTMLElement>('[data-team]').forEach((b) => (b.onclick 
 $('#heroes').innerHTML = HERO_KEYS.map((k) => `<button data-k="${k}"><span class="dot" style="background:${HEROES[k].color}"></span>${HEROES[k].name}<small>${HEROES[k].role}</small></button>`).join('');
 $('#heroes').onclick = (e) => { const b = (e.target as HTMLElement).closest('button'); if (b) client.setHero(b.dataset.k!); };
 $('#b-quit').onclick = () => { if (confirmLeave()) { client.leave(); render(); } };
-$('#end-again').onclick = () => { $('#end').hidden = true; endShown = false; if (client.solo) client.connect(null, 'SOLO', myName()); else { client.result = null; render(); } };
+$('#end-again').onclick = () => { $('#end').hidden = true; endShown = false; client.result = null; render(); };
 $('#end-menu').onclick = () => { $('#end').hidden = true; endShown = false; client.leave(); client.result = null; render(); };
 let leaveArmed = 0;
 function confirmLeave() { const now = performance.now(); if (now - leaveArmed < 3000) return true; leaveArmed = now; client.say('Press Leave again to quit the match.', 'sys'); return false; }
@@ -60,7 +60,7 @@ const hud = new Hud(client, { cast: (slot) => { const a = aimFor(slot, false); c
 
 function render() {
   const inMatch = client.status === 'match' || (client.status === 'reconnecting' && client.you >= 0) || !!client.result;
-  const inLobby = !inMatch && (client.status === 'lobby' || client.status === 'connecting' || client.status === 'reconnecting') && !client.solo;
+  const inLobby = !inMatch && (client.status === 'lobby' || client.status === 'connecting' || client.status === 'reconnecting');
   screens.menu.hidden = inMatch || inLobby; screens.lobby.hidden = !inLobby; screens.game.hidden = !inMatch; input.enabled = inMatch && !client.result;
   if (inLobby) lobby();
   if (inMatch && !renderer) {
@@ -79,7 +79,7 @@ function render() {
 
 function lobby() {
   const L = client.lobby, me = L.players.find((p) => p.id === client.myId);
-  $('#lobby-code').textContent = client.code;
+  $('#lobby-code').textContent = client.solo ? 'Practice' : client.code; $('#lobby-kicker').textContent = client.solo ? 'Conquest against bots' : 'Conquest room'; $('#copy').hidden = client.solo;
   for (const t of [0, 1]) {
     const ps = L.players.filter((p) => p.team === t);
     $('#team' + t).innerHTML = ps.map((p) => `<li class="${p.id === client.myId ? 'me' : ''}"><span class="dot" style="background:${HEROES[p.cls].color}"></span>${esc(p.name)}${p.host ? ' (host)' : ''}<small>${HEROES[p.cls].name}</small><span class="ok">${p.ready ? 'Ready' : ''}</span></li>`).join('') +
@@ -89,12 +89,12 @@ function lobby() {
   document.querySelectorAll<HTMLElement>('#heroes button').forEach((b) => b.classList.toggle('on', b.dataset.k === me?.cls));
   if (me) { const d = HEROES[me.cls]; $('#hero-info').innerHTML = `<b>${d.name}</b>, ${d.role.toLowerCase()}. ` + d.skills.map((s) => `<b>${esc(s.name)}</b>${s.ult ? ' (ultimate)' : ''}: ${esc(s.desc)}`).join(' '); }
   const host = client.isHost, others = L.players.filter((p) => p.id !== client.myId), allReady = others.every((p) => p.ready);
-  $('#fill-wrap').hidden = !host; $<HTMLInputElement>('#fill').checked = L.fill;
+  $('#fill-wrap').hidden = !host || client.solo; $<HTMLInputElement>('#fill').checked = L.fill;
   $('#ready').hidden = host; $('#ready').textContent = me?.ready ? 'Not ready' : 'Ready';
   $('#start').hidden = !host; $<HTMLButtonElement>('#start').disabled = !allReady;
   if (client.status === 'connecting') $('#lobby-msg').textContent = 'Connecting…';
   else if (client.status === 'reconnecting') $('#lobby-msg').textContent = 'Reconnecting…';
-  else if (host) $('#lobby-msg').textContent = allReady ? (others.length ? 'Everyone is ready.' : 'Share the room code, or start now with bots.') : 'Waiting for everyone to be ready.';
+  else if (host) $('#lobby-msg').textContent = allReady ? (client.solo ? 'Choose your hero and team, then start.' : others.length ? 'Everyone is ready.' : 'Share the room code, or start now with bots.') : 'Waiting for everyone to be ready.';
   else $('#lobby-msg').textContent = me?.ready ? 'Waiting for the host to start.' : 'Pick a hero and press Ready.';
 }
 

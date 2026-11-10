@@ -56,7 +56,7 @@ export class GameClient {
   }
   private open() {
     const tr = this.solo ? localTransport() : wsTransport(this.url); this.tr = tr;
-    tr.onopen = () => { this.raw({ t: 'join', v: PROTOCOL, name: this.name, token: this.token || undefined }); if (this.solo) { this.raw({ t: 'ready', v: true }); } };
+    tr.onopen = () => { this.raw({ t: 'join', v: PROTOCOL, name: this.name, token: this.token || undefined }); };
     tr.onmsg = (s) => { let m: ServerMsg; try { m = JSON.parse(s); } catch { return; } this.handle(m); };
     tr.onclose = () => {
       if (this.tr !== tr || this.wantClose) return; this.tr = null;
@@ -80,7 +80,7 @@ export class GameClient {
 
   private handle(m: ServerMsg) {
     if (m.t === 'joined') { this.myId = m.id; this.token = m.token; this.retries = 0; if (!this.solo) try { sessionStorage.setItem('fdc.token.' + this.code, m.token); } catch { /* private mode */ } if (this.status !== 'match') this.status = 'lobby'; }
-    else if (m.t === 'lobby') { this.lobby = { players: m.players, fill: m.fill }; if (m.phase === 'lobby' && this.status !== 'match') this.status = 'lobby'; if (this.solo && m.phase === 'lobby' && !this.result && m.players[0]?.ready && this.you < 0) this.start(); }
+    else if (m.t === 'lobby') { this.lobby = { players: m.players, fill: m.fill }; if (m.phase === 'lobby' && this.status !== 'match') this.status = 'lobby'; }
     else if (m.t === 'start') this.begin(m.you, m.roster);
     else if (m.t === 's') this.snapshot(m);
     else if (m.t === 'end') { this.result = { winner: m.winner, secs: m.secs, stats: m.stats }; this.status = 'lobby'; this.you = -1; this.input.mx = this.input.my = 0; }

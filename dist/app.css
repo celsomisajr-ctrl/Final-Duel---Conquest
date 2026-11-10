@@ -27,6 +27,7 @@ input:not([type=checkbox]){font:600 16px system-ui,sans-serif;padding:13px 14px;
 .msg{min-height:1.4em;color:var(--amber);font-size:14px}
 .lobby-head{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}.lobby-head>div{flex:1}
 #lobby-code{font:800 40px Georgia,serif;letter-spacing:.2em;color:var(--amber)}
+#heroes button{min-height:64px}
 .teams{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .team{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;border-top:3px solid var(--blue)}
 .team.red{border-top-color:var(--red)}
