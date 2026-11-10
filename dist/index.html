@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#14111f">
+<title>Final Duel</title>
+<link rel="icon" href="arena/assets/favicon.ico" sizes="any">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<main id="menu" class="screen">
+  <header class="brand"><span class="kicker">Two ways to fight</span><h1>Final <em>Duel</em></h1></header>
+  <div class="modes">
+    <a class="mode" href="arena/" id="go-arena">
+      <span class="tag">1 v 1</span><h2>Arena</h2>
+      <p>The original duel. Pick a hero, build it, and beat one opponent online or a practice bot.</p>
+      <span class="btn ghost">Enter the Arena</span>
+    </a>
+    <section class="mode on">
+      <span class="tag">5 v 5</span><h2>Conquest</h2>
+      <p>Three lanes, turrets, jungle monsters and two Cores. Level up, take objectives, and break the enemy base.</p>
+      <label class="field"><span>Your name</span><input id="name" maxlength="14" autocomplete="off" spellcheck="false"></label>
+      <button class="btn" id="solo">Play against bots</button>
+      <div class="row"><button class="btn alt" id="create">Create a room</button></div>
+      <div class="row"><input id="code" maxlength="5" placeholder="ROOM CODE" autocomplete="off" spellcheck="false" aria-label="Room code"><button class="btn alt" id="join">Join</button></div>
+      <p class="msg" id="menu-msg" role="status"></p>
+    </section>
+  </div>
+</main>
+
+<main id="lobby" class="screen" hidden>
+  <header class="lobby-head">
+    <div><span class="kicker">Conquest room</span><h2 id="lobby-code"></h2></div>
+    <button class="btn ghost small" id="copy">Copy invite link</button>
+    <button class="btn ghost small" id="leave">Leave</button>
+  </header>
+  <div class="teams"><section class="team blue"><h3>Blue team <button class="btn ghost small" data-team="0">Join</button></h3><ul id="team0"></ul></section>
+  <section class="team red"><h3>Red team <button class="btn ghost small" data-team="1">Join</button></h3><ul id="team1"></ul></section></div>
+  <section class="picker"><h3>Choose your hero</h3><div id="heroes"></div><div id="hero-info"></div></section>
+  <footer class="lobby-foot">
+    <label class="check" id="fill-wrap"><input type="checkbox" id="fill"> Fill empty seats with bots</label>
+    <p class="msg" id="lobby-msg" role="status"></p>
+    <button class="btn alt" id="ready">Ready</button><button class="btn" id="start">Start match</button>
+  </footer>
+</main>
+
+<div id="game" hidden>
+  <canvas id="gl"></canvas><canvas id="ov"></canvas>
+  <div class="hud">
+    <canvas id="minimap" width="168" height="168"></canvas>
+    <div class="top"><span class="score blue" id="k0">0</span><span class="clock" id="clock">0:00</span><span class="score red" id="k1">0</span></div>
+    <div class="objectives" id="objectives"></div>
+    <div class="corner"><span id="net" title="Connection"></span><button id="b-board" aria-label="Scoreboard">Score</button><button id="b-shop" aria-label="Shop">Shop</button><button id="b-quit" aria-label="Leave match">Leave</button></div>
+    <ul class="feed" id="feed"></ul>
+    <div class="banner" id="banner" hidden></div>
+    <div class="status" id="status" hidden></div>
+    <div class="hero-panel">
+      <div class="lv" id="lv">1</div>
+      <div class="bars"><div class="bar hp"><i id="hp"></i><b id="hp-t"></b></div><div class="bar mp"><i id="mp"></i><b id="mp-t"></b></div><div class="bar xp"><i id="xp"></i></div></div>
+      <div class="gold"><span id="gold">0</span><small>gold</small></div>
+      <div class="buffs" id="buffs"></div>
+    </div>
+    <div class="skills" id="skills"></div>
+    <div class="stick" id="stick" hidden><i></i></div>
+  </div>
+  <section class="panel" id="board" hidden><h3>Scoreboard</h3><table><thead><tr><th>Hero</th><th>Lv</th><th>K</th><th>D</th><th>A</th><th>Gold</th></tr></thead><tbody id="board-rows"></tbody></table></section>
+  <section class="panel" id="shop" hidden><h3>Sanctuary shop <button class="btn ghost small" id="shop-x">Close</button></h3><p class="hint" id="shop-hint"></p><div id="shop-items"></div></section>
+  <section class="panel end" id="end" hidden><span class="kicker" id="end-k"></span><h2 id="end-title"></h2><table><thead><tr><th>Hero</th><th>Lv</th><th>K</th><th>D</th><th>A</th><th>Gold</th></tr></thead><tbody id="end-rows"></tbody></table><div class="row"><button class="btn" id="end-again">Continue</button><button class="btn ghost" id="end-menu">Main menu</button></div></section>
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

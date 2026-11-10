@@ -1,0 +1,12 @@
+{
+  "name": "final-duel-conquest",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "dev": "bun scripts/build.ts && bun src/server/local.ts",
+    "test": "bun test",
+    "typecheck": "tsc -p .",
+    "deploy": "bun scripts/build.ts && npx wrangler deploy"
+  }
+}
