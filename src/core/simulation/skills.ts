@@ -73,36 +73,38 @@ export function castSkill(w: World, pid: number, slot: number, ax: number, ay: n
     for (const o of w.heroes) if (o.alive && o.team !== u.team && o.h!.invuln <= 0) { const q = dist(o.x, o.y, u.x, u.y) - o.r; if (q <= d.range && q < bd) { bd = q; best = o; } }
     if (!best) return false;
     h.fx = (best.x - u.x) / (bd + best.r || 1); h.fy = (best.y - u.y) / (bd + best.r || 1);
-    emit(w, { e: 'fx', k: d.key, x: best.x, y: best.y, x2: u.x, y2: u.y, team: u.team });
+    emit(w, { e: 'fx', u: u.id, k: d.key, x: best.x, y: best.y, x2: u.x, y2: u.y, team: u.team });
     applyCC(best, stun, slowAmt, slowT); damage(w, u, best, dmg);
   } else if (d.type === 'nova') {
-    emit(w, { e: 'fx', k: d.key, x: u.x, y: u.y, r: d.radius, team: u.team });
+    emit(w, { e: 'fx', u: u.id, k: d.key, x: u.x, y: u.y, r: d.radius, team: u.team });
     for (const o of areaTargets(w, u.team, u.x, u.y, d.radius!)) { applyCC(o, stun, slowAmt, slowT); damage(w, u, o, dmg); }
     if (d.shield) { h.shield = val(d.shield, rank); h.shieldT = 4; }
   } else if (d.type === 'cone') {
     h.fx = nx; h.fy = ny;
-    emit(w, { e: 'fx', k: d.key, x: u.x, y: u.y, r: d.range, a: Math.atan2(ny, nx), w: d.angle, team: u.team });
+    emit(w, { e: 'fx', u: u.id, k: d.key, x: u.x, y: u.y, r: d.range, a: Math.atan2(ny, nx), w: d.angle, team: u.team });
     for (const o of areaTargets(w, u.team, u.x, u.y, d.range)) {
       const ox = o.x - u.x, oy = o.y - u.y, ol = Math.hypot(ox, oy) || 1;
       if (ol < o.r + 1.5 || (ox * nx + oy * ny) / ol >= Math.cos(d.angle!)) { applyCC(o, stun, slowAmt, slowT); damage(w, u, o, dmg); }
     }
   } else if (d.type === 'shot') {
     h.fx = nx; h.fy = ny;
+    emit(w, { e: 'fx', u: u.id, k: d.key + '-cast', x: u.x, y: u.y, team: u.team });
     w.projs.push({ id: w.nextId++, owner: u.id, team: u.team, k: d.key, x: u.x + nx * 1.2, y: u.y + ny * 1.2, vx: nx * d.speed!, vy: ny * d.speed!, left: d.range, r: d.radius || 1, dmg, pierce: !!d.pierce, slowAmt, slowT, stun, hit: new Set() });
   } else if (d.type === 'zone') {
     const zx = d.range > 0 ? tx : u.x, zy = d.range > 0 ? ty : u.y;
     if (d.range > 0) { h.fx = nx; h.fy = ny; }
+    emit(w, { e: 'fx', u: u.id, k: d.key + '-cast', x: u.x, y: u.y, team: u.team });
     w.zones.push({ id: w.nextId++, owner: u.id, team: u.team, k: d.key, x: zx, y: zy, r: d.radius!, delay: d.delay || 0, dur: val(d.dur, rank), tick: d.tick || 0, tickCd: 0, dmg, heal: val(d.heal, rank), slowAmt, slowT, stun });
   } else if (d.type === 'dash') {
     const T = Math.max(0.12, reach / 34);
     h.fx = nx; h.fy = ny;
     h.dash = { vx: (nx * reach) / T, vy: (ny * reach) / T, t: T, hitR: d.stop ? 1.6 : 0, dmg, stun, slowAmt, slowT, stop: !!d.stop, land: d.land || 0, hit: new Set(), fx: d.key };
     if (d.buff) h.buffs[d.buff] = val(d.dur, rank);
-    emit(w, { e: 'fx', k: d.key, x: u.x, y: u.y, x2: tx, y2: ty, team: u.team });
+    emit(w, { e: 'fx', u: u.id, k: d.key, x: u.x, y: u.y, x2: tx, y2: ty, team: u.team });
   } else if (d.type === 'buff') {
     h.buffs[d.buff!] = val(d.dur, rank);
     if (d.heal) heal(u, val(d.heal, rank));
-    emit(w, { e: 'fx', k: d.key, x: u.x, y: u.y, r: 3, team: u.team });
+    emit(w, { e: 'fx', u: u.id, k: d.key, x: u.x, y: u.y, r: 3, d: val(d.dur, rank), team: u.team });
   }
   h.mana -= cost; h.cds[slot] = skillCd(d, rank) * (1 - Math.min(0.4, add(w, u, 'cdr')));
   h.recall = 0; h.invuln = 0; h.combat = Math.max(h.combat, 1);

@@ -75,7 +75,7 @@ function tickHero(w: World, u: Unit, structs: Unit[]) {
     }
     if (done) {
       if (d.land > 0) {
-        emit(w, { e: 'fx', k: d.fx + '-land', x: u.x, y: u.y, r: d.land, team: u.team });
+        emit(w, { e: 'fx', u: u.id, k: d.fx + '-land', x: u.x, y: u.y, r: d.land, team: u.team });
         for (const o of areaTargets(w, u.team, u.x, u.y, d.land)) { applyCC(o, d.stun, d.slowAmt, d.slowT); damage(w, u, o, d.dmg); }
       }
       h.dash = null;

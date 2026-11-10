@@ -27,7 +27,7 @@ export function localTransport(): Transport {
   return t;
 }
 
-export interface RUnit { id: number; sub: string; kind: string; team: number; x: number; y: number; px: number; py: number; tx: number; ty: number; t0: number; hp: number; maxHp: number; flags: number; pid: number; level: number; face: number; seen: number; atkT: number; hitT: number; moving: boolean; r: number }
+export interface RUnit { id: number; sub: string; kind: string; team: number; x: number; y: number; px: number; py: number; tx: number; ty: number; t0: number; hp: number; maxHp: number; flags: number; pid: number; level: number; face: number; seen: number; atkT: number; hitT: number; moving: boolean; r: number; castT: number; castK: string; auraK: string; auraUntil: number; tip: number[] | null }
 export interface Fx { k: string; x: number; y: number; x2: number; y2: number; r: number; a: number; w: number; team: number; t: number; dur: number; from: number; to: number }
 export interface FloatText { x: number; y: number; h: number; text: string; color: string; t: number }
 export interface StructView { id: number; kind: string; team: number; lane: number; tier: number; x: number; y: number; hp: number; maxHp: number; r: number; range: number }
@@ -112,7 +112,7 @@ export class GameClient {
     for (const row of s.u) {
       const [id, code, team, qx, qy, hp, maxHp, flags, pid, level, face] = row, x = qx / 10, y = qy / 10, sub = SUBS[code];
       let u = this.units.get(id);
-      if (!u) { const kind = HEROES[sub] ? 'hero' : MONSTERS[sub] ? 'monster' : 'minion'; u = { id, sub, kind, team, x, y, px: x, py: y, tx: x, ty: y, t0: now, hp, maxHp, flags, pid: pid ?? -1, level: level ?? 0, face: 0, seen: s.n, atkT: 0, hitT: 0, moving: false, r: kind === 'hero' ? 1.1 : MONSTERS[sub]?.r || 0.9 }; this.units.set(id, u); }
+      if (!u) { const kind = HEROES[sub] ? 'hero' : MONSTERS[sub] ? 'monster' : 'minion'; u = { id, sub, kind, team, x, y, px: x, py: y, tx: x, ty: y, t0: now, hp, maxHp, flags, pid: pid ?? -1, level: level ?? 0, face: 0, seen: s.n, atkT: 0, hitT: 0, moving: false, castT: 0, castK: '', auraK: '', auraUntil: 0, tip: null, r: kind === 'hero' ? 1.1 : MONSTERS[sub]?.r || 0.9 }; this.units.set(id, u); }
       if (hp < u.hp - 0.5 && (u.kind !== 'minion' || u.team !== this.team)) { u.hitT = now; if (u.kind !== 'minion' || Math.hypot(u.x - this.pred.x, u.y - this.pred.y) < 14) this.float(u.x, u.y, 2.4, String(Math.round(u.hp - hp)), u.pid === this.you ? '#ff8a7a' : '#ffe9a8'); }
       const d = Math.hypot(x - u.tx, y - u.ty); u.moving = d > 0.05;
       if (d > 0.05 && u.kind !== 'hero') u.face = Math.atan2(y - u.ty, x - u.tx);
@@ -138,13 +138,13 @@ export class GameClient {
   posOf(id: number): { x: number; y: number; h: number } | null {
     if (id >= 1 && id <= this.structs.length) { const s = this.structs[id - 1]; return { x: s.x, y: s.y, h: s.kind === 'core' ? 4 : 5.2 }; }
     const u = this.units.get(id); if (!u) return null;
-    return u.pid === this.you ? { x: this.pred.x, y: this.pred.y, h: 1.4 } : { x: u.x, y: u.y, h: 1.2 };
+    return u.pid === this.you ? { x: this.pred.x, y: this.pred.y, h: 1.6 } : { x: u.x, y: u.y, h: u.kind === 'hero' ? 1.6 : 1.1 };
   }
   private event(e: any, now: number) {
     const base = { x: e.x ?? 0, y: e.y ?? 0, x2: e.x2 ?? 0, y2: e.y2 ?? 0, r: e.r ?? 0, a: e.a ?? 0, w: e.w ?? 0, team: e.team ?? 0, t: now, from: 0, to: 0 };
     const mine = (pid: number) => this.teamOf(pid) === this.team;
     if (e.e === 'atk') { const a = this.units.get(e.a); if (a) { a.atkT = now; const b = this.posOf(e.b); if (b && a.kind !== 'hero') a.face = Math.atan2(b.y - a.y, b.x - a.x); } if (e.k) this.fx.push({ ...base, k: e.k === 2 ? 'beam' : e.k === 3 ? 'smash' : 'bolt', dur: e.k === 2 ? 0.25 : 0.16, from: e.a, to: e.b }); }
-    else if (e.e === 'fx') this.fx.push({ ...base, k: e.k, dur: 0.45 });
+    else if (e.e === 'fx') { const u = this.units.get(e.u); if (u) { u.castT = now; u.castK = e.k; if (e.d) { u.auraK = e.k; u.auraUntil = now + e.d * 1000; } } this.fx.push({ ...base, k: e.k, dur: 0.45, from: e.u || 0 }); }
     else if (e.e === 'kill') {
       const v = this.nameOf(e.victim);
       this.say(e.killer >= 0 ? `${this.nameOf(e.killer)} defeated ${v}` : `${v} was slain`, e.killer >= 0 ? (mine(e.killer) ? 'ally' : 'foe') : mine(e.victim) ? 'foe' : 'ally');

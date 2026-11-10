@@ -108,7 +108,7 @@ function frame(now: number) {
   if (client.me) { const k = 1 - Math.exp(-dt * 10); cam.x += (client.pred.x - cam.x) * k; cam.y += (client.pred.y - cam.y) * k; if (Math.hypot(client.pred.x - cam.x, client.pred.y - cam.y) > 30) { cam.x = client.pred.x; cam.y = client.pred.y; } }
   renderer.resize(input.touch ? 1.25 : 1.5);
   const oc = ov.canvas, dpr = Math.min(devicePixelRatio || 1, 2); if (oc.width !== Math.round(renderer.w * dpr) || oc.height !== Math.round(renderer.h * dpr)) { oc.width = Math.round(renderer.w * dpr); oc.height = Math.round(renderer.h * dpr); }
-  drawScene(renderer, client, cam, now / 1000); drawOverlay(ov, renderer, client);
+  drawScene(renderer, client, cam, now / 1000, dt); drawOverlay(ov, renderer, client);
   if (client.me) hud.update();
 }
 requestAnimationFrame(frame);

@@ -11,7 +11,8 @@ src/core/simulation/    world.ts (state, damage, rewards), systems.ts (the tick)
 src/core/networking/    protocol.ts (wire format), snapshot.ts (per-client view), room.ts (lobby + match)
 src/server/             worker.ts (Cloudflare Worker + Durable Object), local.ts (Bun dev/test server)
 src/modes/conquest/     client.ts (connection, interpolation, prediction)
-src/rendering/          gl.ts (WebGL2 renderer), scene.ts (what to draw)
+src/rendering/          gl.ts (WebGL2 renderer), models.ts (hero and minion figures ported from the Arena),
+                        scene.ts (what to draw: units, effects, particles, overlay)
 src/ui/                 hud.ts, input.ts, app.css
 public/arena/           the 1v1 game, unchanged
 ```
@@ -61,5 +62,5 @@ Build: `bun run build` writes `dist/` (committed). Deploy: `npx wrangler deploy`
 - Bots lane, fight, retreat, recall and shop, but do not jungle or contest epic monsters.
 - No matchmaking, accounts, spectators or chat. No sound in Conquest.
 - Skills are quick-cast with no range preview. Touch casting auto-aims.
-- Heroes are built from simple shapes; there are no authored models or animations.
+- Heroes use the Arena's jointed figures and poses. Skill animations are driven by server events and are shorter and simpler than the Arena's hand-timed sequences (for example Blade Punishment and Leap Strike). Jungle monsters are still simple shapes.
 - Rendering performance has only been measured with a software renderer.
